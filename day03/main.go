@@ -12,14 +12,14 @@ func main() {
 	input, _ := os.ReadFile("input.txt")
 	strInput := strings.ReplaceAll(string(input), "\n", "")
 
-	mulRegex, _ := regexp.Compile(`mul\(([0-9]{1,3}),([0-9]{1,3})\)`)
-	submatches := mulRegex.FindAllStringSubmatch(strInput, -1)
-
 	condInput := strInput
 	for _, condRegexStr := range []string{`don't\(\).*?do\(\)`, `don't\(\).*$`} {
 		condRegex, _ := regexp.Compile(condRegexStr)
 		condInput = condRegex.ReplaceAllLiteralString(condInput, "")
 	}
+
+	mulRegex, _ := regexp.Compile(`mul\(([0-9]{1,3}),([0-9]{1,3})\)`)
+	submatches := mulRegex.FindAllStringSubmatch(strInput, -1)
 	condSubmatches := mulRegex.FindAllStringSubmatch(condInput, -1)
 
 	fmt.Println("sum:    ", submatchSum(submatches))

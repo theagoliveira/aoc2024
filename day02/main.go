@@ -31,8 +31,8 @@ func main() {
 		}
 	}
 
-	fmt.Printf("safe:             %d\n", safe)
-	fmt.Printf("safeWithDampener: %d\n", safeWithDampener)
+	fmt.Println("safe:            ", safe)
+	fmt.Println("safeWithDampener:", safeWithDampener)
 }
 
 func isSafe(levels []int) bool {

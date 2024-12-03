@@ -36,8 +36,8 @@ func main() {
 		similarity = similarity + (leftList[i] * rightMap[leftList[i]])
 	}
 
-	fmt.Printf("difference: %d\n", difference)
-	fmt.Printf("similarity: %d\n", similarity)
+	fmt.Println("difference:", difference)
+	fmt.Println("similarity:", similarity)
 }
 
 func abs(n int) int {

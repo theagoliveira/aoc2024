@@ -39,9 +39,10 @@ func main() {
 
 func countWords(letters [][]string, x, y int) int {
 	count := 0
+	countRange := []int{-1, 0, 1}
 
-	for i := -1; i <= 1; i++ {
-		for j := -1; j <= 1; j++ {
+	for _, i := range countRange {
+		for _, j := range countRange {
 			condition := true
 			for k := 1; k < len(word) && condition; k++ {
 				condition = condition &&

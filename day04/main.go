@@ -42,10 +42,6 @@ func countWords(letters [][]string, x, y int) int {
 
 	for i := -1; i <= 1; i++ {
 		for j := -1; j <= 1; j++ {
-			if !isValid(letters, x+i, y+j) {
-				continue
-			}
-
 			condition := true
 			for k := 1; k < len(word) && condition; k++ {
 				condition = condition &&
@@ -53,11 +49,9 @@ func countWords(letters [][]string, x, y int) int {
 					letters[k*i+x][k*j+y] == string(word[k])
 			}
 
-			if !condition {
-				continue
+			if condition {
+				count++
 			}
-
-			count++
 		}
 	}
 
@@ -76,11 +70,9 @@ func hasXWord(letters [][]string, x, y int) bool {
 		}
 	}
 
-	condition := xMap[string(xWord[0])] == 2 &&
+	return xMap[string(xWord[0])] == 2 &&
 		xMap[string(xWord[2])] == 2 &&
 		letters[x-1][y-1] != letters[x+1][y+1]
-
-	return condition
 }
 
 func isValid(array [][]string, x, y int) bool {

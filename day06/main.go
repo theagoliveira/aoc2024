@@ -19,10 +19,26 @@ const (
 
 func main() {
 	guardMap, gx, gy := setup("test.txt")
+	mapCopy := copy(guardMap)
 
-	sum, loops := dfs(guardMap, gx, gy, math.Pi)
+	nodes := dfs(guardMap, gx, gy, math.Pi)
+	fmt.Println("nodes:", len(nodes))
 
-	fmt.Println("sum:  ", sum)
+	loops := []map[string]struct{}{}
+	for _, node := range nodes {
+		if slices.Equal(node, []int{gx, gy}) {
+			continue
+		}
+
+		loopMap := copy(mapCopy)
+		loopMap[node[0]][node[1]] = obstacle
+
+		loop := dfsLoop(loopMap, createEmptyArrayFrom(loopMap), gx, gy, math.Pi)
+		if len(loop) != 0 && !arrayContains(loops, loop) {
+			printArray(loopMap)
+			loops = append(loops, loop)
+		}
+	}
 	fmt.Println("loops:", len(loops))
 }
 
@@ -56,38 +72,25 @@ func calcDirection(angle float64) (int, int) {
 	return int(math.Cos(angle)), int(math.Sin(angle))
 }
 
-func dfs(array [][]string, x, y int, angle float64) (int, []map[string]struct{}) {
-	count := 0
-	loops := []map[string]struct{}{}
+func dfs(array [][]string, x, y int, angle float64) [][]int {
 	dx, dy := calcDirection(angle)
 
-	if array[x][y] != visited {
-		array[x][y] = visited
-		count = 1
-	}
-
-	if !isValid(array, x+dx, y+dy) {
-		return count, loops
-	}
-
-	if array[x+dx][y+dy] == wall {
+	for isValid(array, x+dx, y+dy) && array[x+dx][y+dy] == wall {
 		angle = nextAngle(angle)
 		dx, dy = calcDirection(angle)
 	}
 
-	arrayCopy := copy(array)
-	arrayCopy[x+dx][y+dy] = obstacle
-	parents := createEmptyArrayFrom(arrayCopy)
-	loop := dfsLoop(arrayCopy, parents, x, y, angle)
-
-	prevCount, prevLoops := dfs(array, x+dx, y+dy, angle)
-
-	loops = prevLoops
-	if len(loop) != 0 && !arrayContains(loops, loop) {
-		loops = append(loops, loop)
+	nodes := [][]int{}
+	if isValid(array, x+dx, y+dy) {
+		nodes = dfs(array, x+dx, y+dy, angle)
 	}
 
-	return prevCount + count, loops
+	if array[x][y] != visited {
+		array[x][y] = visited
+		nodes = append(nodes, []int{x, y})
+	}
+
+	return nodes
 }
 
 func dfsLoop(array [][]string, parent [][][]int, x, y int, angle float64) map[string]struct{} {
@@ -97,25 +100,22 @@ func dfsLoop(array [][]string, parent [][][]int, x, y int, angle float64) map[st
 		array[x][y] = visitedLoop
 	}
 
+	turns := 0
+	for isValid(array, x+dx, y+dy) && (array[x+dx][y+dy] == wall || array[x+dx][y+dy] == obstacle) {
+		angle = nextAngle(angle)
+		dx, dy = calcDirection(angle)
+		turns++
+		if turns == 4 {
+			return createLoopSet(parent)
+		}
+	}
+
 	if !isValid(array, x+dx, y+dy) {
 		return map[string]struct{}{}
 	}
 
-	if array[x+dx][y+dy] == wall || array[x+dx][y+dy] == obstacle {
-		angle = nextAngle(angle)
-		dx, dy = calcDirection(angle)
-	}
-
 	if array[x+dx][y+dy] == visitedLoop && slices.Equal(parent[x+dx][y+dy], []int{x, y}) {
-		result := map[string]struct{}{}
-		for i, row := range parent {
-			for j, col := range row {
-				if len(col) > 0 {
-					result[fmt.Sprintf("[%d,%d,%d,%d]", i, j, col[0], col[1])] = struct{}{}
-				}
-			}
-		}
-		return result
+		return createLoopSet(parent)
 	}
 
 	parent[x+dx][y+dy] = []int{x, y}
@@ -161,4 +161,16 @@ func arrayContains(array []map[string]struct{}, new map[string]struct{}) bool {
 	}
 
 	return false
+}
+
+func createLoopSet(array [][][]int) map[string]struct{} {
+	result := map[string]struct{}{}
+	for i, row := range array {
+		for j, col := range row {
+			if len(col) > 0 {
+				result[fmt.Sprintf("[%d,%d,%d,%d]", i, j, col[0], col[1])] = struct{}{}
+			}
+		}
+	}
+	return result
 }
